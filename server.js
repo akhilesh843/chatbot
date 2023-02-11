@@ -19,7 +19,48 @@ app.use(cors());
 app.use(express.json());
 
 
-app.post("/chat", (req, res) => {
+
+
+const checkUserAuth = async (req, res, next) => {
+
+  const apiKeys = process.env.API_KEY;
+
+
+  function error(status, msg) {
+    var err = new Error(msg);
+    err.status = status;
+    return err;
+  }
+
+  // const { authorization } = req.headers
+  
+
+
+  // var key = req.headers.api_key;
+
+  var key = req.headers['api_key'];
+
+  console.log(key);
+
+  // key isn't present
+  if (!key) return next(error(400, 'api key is required'));
+
+ 
+
+  // key is invalid
+  if (apiKeys.indexOf(key) === -1) return next(error(401, 'invalid api key'))
+
+
+  // all good, store req.key for route access
+  req.key = key;
+  next();
+
+
+}
+
+
+
+app.post("/chat", checkUserAuth,(req, res) => {
   const question = req.body.question;
 
   openai
